@@ -1,17 +1,22 @@
 #![allow(non_snake_case)]
 use actix_files::NamedFile;
-use actix_web::{Responder, web, App, HttpServer, middleware};
+use actix_web::{Responder, web, App, HttpServer, middleware, HttpRequest, HttpResponse, Error};
+use actix_web_actors::ws;
 use env_logger::{Env, init_from_env};
+mod server;
+use self::server::MyWebSocket;
 
 
 
-///
-/// Get the index.html file
-/// 
+// Get the index.html file
 async fn index() -> impl Responder{
     NamedFile::open_async("./static/index.html").await.expect("failed to index file")
 }
 
+// WebSocket handshake and start 'MyWebSocket' actor....
+async fn websocket(req : HttpRequest, stream : web::Payload) -> Result<HttpResponse, Error>{
+    ws::start(MyWebSocket::new(), &req,stream)
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()>{
@@ -22,6 +27,7 @@ async fn main() -> std::io::Result<()>{
     HttpServer::new(||{
         App::new()
          .service(web::resource("/").to(index))
+         .service(web::resource("/ws").route(web::get().to(websocket)))
          .wrap(middleware::Logger::default())
     })
     .workers(2)
