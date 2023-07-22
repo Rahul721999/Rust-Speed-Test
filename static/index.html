@@ -113,9 +113,9 @@
             else {
                 start() // start the test...
             }
-            // call the start() fn..
             // change the start button status....
             updateTestStatus();
+
         });
 
         /* ---------------fn to show the message inside the box--------------- */
@@ -125,30 +125,32 @@
         }
         /* ----------------fn to start the test---------------- */
         function start() {
-
-            const ws_uri = "http://localhost:8080/ws";
-            let testsRun = 10;
+            complete();
+            const wsuri = "ws://localhost/ws";
+            let testsRun = 0;
 
             log("Starting...")
         //  open a new socket conn
-            socket = new WebSocket(ws_uri);
+            socket = new WebSocket(wsuri);
         // while the socket is open...
             socket.onopen = () =>{
                 log('started');
-                updateTestStatus(); // update the 'Start' btn status
+                updateTestStatus(); // update the 'Start' btn status to
                 testsRun++;
                 startTime = performance.now();
                 socket.send("start");
-            }
-            socket.onmessage=()=>{
+            };
+            socket.onmessage =(ev)=>{
                 endTime = performance.now();
                 log(`Completed Test: ${testsRun}/${totalTests} & Time taken: ${endTime - startTime}ms`);
                 
                 // store the results to the array..
                 testResults.push(endTime - startTime);
 
-                if(testsRun < tests){
+                if(testsRun < totalTests){
                     testsRun++;
+                    startTime = performance.now();
+                    socket.send("start")
                 }else{
                     complete();
                 }
@@ -157,24 +159,41 @@
             socket.onclose=()=>{
                 log("Finished", "success");
                 socket = null; // free socket var
+                socket.send("start");
                 updateTestStatus(); // update the 'start' button status..
             }
         }
 
         /* -----------------fn to calculate result----------------- */
         function complete(){
-            
+            if(socket){ // if the socket is open
+                log('Cleaning up..')
+                socket.close(); // close the socket
+                socket = null; // free socket var
+
+                // calculate the test result..
+                let testsAvgTime = average(testResults) / 1000;
+                let mbps = 10/testsAvgTime;
+
+                // change log
+                log(`Avg speed: ${mbps.toFixed(2)} MB/s`);
+                // update the 'start' button status
+                updateTestStatus();
+            }
         }
 
         /* ----------------start button status change---------------- */
         function updateTestStatus() {
             if (socket) { // if socket conn is open
-                $startButton.disable = true; // disable the start button...
+                $startButton.disabled = true; // disable the start button...
                 $startButton.innerHTML = 'Running' // change start button status..
             } else {
-                $startButton.disable = false;
+                $startButton.disabled = false;
                 $startButton.innerHTML = 'Start';
             }
         }
+
+        updateTestStatus();
+        log('Click the "start" btn.');
     </script>
 </body></html>
