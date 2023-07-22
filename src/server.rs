@@ -1,4 +1,4 @@
-use std::{time::{Duration, Instant}, fs::File, io::{BufReader, Read, Bytes}};
+use std::{time::{Duration, Instant}, fs::File, io::{BufReader, Read}};
 use actix::prelude::*;
 use actix_web_actors::ws;
 
@@ -69,12 +69,18 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MyWebSocket{
             }
 
             // Text will echo any text received back to the client (for now)
-            Ok(ws::Message::Text(text)) => ctx.text(text),
+            Ok(ws::Message::Text(_)) => {
+                let file = File::open("./static/test-50mb.bin").expect("Failed to get the test file");
+                let mut reader = BufReader::new(file);
+                let mut buffer = Vec::new();
+                reader.read_to_end(&mut buffer).expect("failed to read the test file");
+                ctx.binary(buffer);
+            },
             // Close will close the socket
             Ok(ws::Message::Close(reason))=>{
                 ctx.close(reason);
                 ctx.stop();
-            } 
+            }
             _ => ctx.stop(),
         }
     }
