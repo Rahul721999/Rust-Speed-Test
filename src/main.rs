@@ -22,7 +22,7 @@ async fn websocket(req : HttpRequest, stream : web::Payload) -> Result<HttpRespo
 async fn main() -> std::io::Result<()>{
     // load env var
     init_from_env(Env::new().default_filter_or("info"));
-    log::info!("🚀 Starting server at http://localhost:8080");
+    log::info!("🚀 Starting server at http://localhost:8000");
 
     HttpServer::new(||{
         App::new()
@@ -31,7 +31,7 @@ async fn main() -> std::io::Result<()>{
          .wrap(middleware::Logger::default())
     })
     .workers(2)
-    .bind(("127.0.0.1", 8080))?
+    .bind(("127.0.0.1", 8000))?
     .run()
     .await
 

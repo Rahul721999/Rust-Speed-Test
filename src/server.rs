@@ -67,10 +67,10 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MyWebSocket{
             Ok(ws::Message::Pong(_)) =>{
                 self.hb = Instant::now();
             }
-
-            // Text will echo any text received back to the client (for now)
+            
+            // Text will echo any text received back to the client
             Ok(ws::Message::Text(_)) => {
-                let file = File::open("./static/test-50mb.bin").expect("Failed to get the test file");
+                let file = File::open("./static/test-10mb.bin").expect("Failed to get the test file");
                 let mut reader = BufReader::new(file);
                 let mut buffer = Vec::new();
                 reader.read_to_end(&mut buffer).expect("failed to read the test file");

@@ -126,7 +126,7 @@
         /* ----------------fn to start the test---------------- */
         function start() {
             complete();
-            const wsuri = "ws://localhost/ws";
+            const wsuri = "ws://localhost:8000/ws";
             let testsRun = 0;
 
             log("Starting...")
@@ -134,7 +134,7 @@
             socket = new WebSocket(wsuri);
         // while the socket is open...
             socket.onopen = () =>{
-                log('started');
+                log('Started');
                 updateTestStatus(); // update the 'Start' btn status to
                 testsRun++;
                 startTime = performance.now();
@@ -142,7 +142,8 @@
             };
             socket.onmessage =(ev)=>{
                 endTime = performance.now();
-                log(`Completed Test: ${testsRun}/${totalTests} & Time taken: ${endTime - startTime}ms`);
+                log(`Completed Test: ${testsRun}/${totalTests}. 
+                    Time taken: ${endTime - startTime}ms`);
                 
                 // store the results to the array..
                 testResults.push(endTime - startTime);
@@ -159,7 +160,6 @@
             socket.onclose=()=>{
                 log("Finished", "success");
                 socket = null; // free socket var
-                socket.send("start");
                 updateTestStatus(); // update the 'start' button status..
             }
         }
@@ -176,7 +176,7 @@
                 let mbps = 10/testsAvgTime;
 
                 // change log
-                log(`Avg speed: ${mbps.toFixed(2)} MB/s`);
+                log(`Avg speed: ${mbps.toFixed(2)} MBytes/s or ${(mbps* 8).toFixed(2)}Mbits/s`);
                 // update the 'start' button status
                 updateTestStatus();
             }
